@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+        TF_IN_AUTOMATION = "true"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                sh '''
+                terraform --version
+                terraform init -input=false
+                '''
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                sh '''
+                terraform validate
+                '''
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                sh '''
+                terraform plan -out=tfplan
+                '''
+            }
+        }
+
+        stage('Approval') {
+            steps {
+                input message: 'Apply Terraform changes?', ok: 'Approve'
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                sh '''
+                terraform apply -input=false tfplan
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+
+        failure {
+            echo "Pipeline failed. Infrastructure NOT applied."
+        }
+    }
+}

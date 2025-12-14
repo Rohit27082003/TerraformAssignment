@@ -1,5 +1,3 @@
-# EC2 Module Outputs
-
 output "public_ec2_instance_id" {
   description = "ID of the public EC2 instance"
   value       = aws_instance.public.id

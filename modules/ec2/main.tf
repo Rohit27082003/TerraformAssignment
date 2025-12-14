@@ -1,12 +1,8 @@
-# EC2 Module - Deploy VMs in public and private subnets
-
-# Security Group for Public EC2 (NGINX Server)
 resource "aws_security_group" "public_ec2" {
   name        = "${var.project_name}-public-ec2-sg"
   description = "Security group for public EC2 instance with NGINX"
   vpc_id      = var.vpc_id
 
-  # Allow SSH from anywhere (for management)
   ingress {
     description = "SSH"
     from_port   = 22
@@ -15,7 +11,6 @@ resource "aws_security_group" "public_ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow HTTP from anywhere
   ingress {
     description = "HTTP"
     from_port   = 80
@@ -24,7 +19,6 @@ resource "aws_security_group" "public_ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow HTTPS from anywhere
   ingress {
     description = "HTTPS"
     from_port   = 443
@@ -33,7 +27,6 @@ resource "aws_security_group" "public_ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow all outbound traffic
   egress {
     description = "All outbound"
     from_port   = 0
@@ -47,13 +40,11 @@ resource "aws_security_group" "public_ec2" {
   }
 }
 
-# Security Group for Private EC2
 resource "aws_security_group" "private_ec2" {
   name        = "${var.project_name}-private-ec2-sg"
   description = "Security group for private EC2 instance"
   vpc_id      = var.vpc_id
 
-  # Allow SSH from public subnet only
   ingress {
     description     = "SSH from public subnet"
     from_port       = 22
@@ -62,7 +53,6 @@ resource "aws_security_group" "private_ec2" {
     security_groups = [aws_security_group.public_ec2.id]
   }
 
-  # Allow all outbound traffic
   egress {
     description = "All outbound"
     from_port   = 0
@@ -76,7 +66,6 @@ resource "aws_security_group" "private_ec2" {
   }
 }
 
-# EC2 Instance in Public Subnet (NGINX Server)
 resource "aws_instance" "public" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
@@ -89,7 +78,7 @@ resource "aws_instance" "public" {
     apt install -y nginx
     systemctl start nginx
     systemctl enable nginx
-    echo "<h1>Welcome to NGINX on Public EC2 Instance</h1>" > /usr/share/nginx/html/index.html
+    echo "<h1>Welcome to NGINX on Public EC2 Instance</h1>" > /var/www/html/index.nginx-debian.html
   EOF
 
   tags = {
@@ -97,7 +86,6 @@ resource "aws_instance" "public" {
   }
 }
 
-# EC2 Instance in Private Subnet
 resource "aws_instance" "private" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
@@ -110,10 +98,9 @@ resource "aws_instance" "private" {
   }
 }
 
-# Data source to get latest Ubuntu 22.04 LTS AMI
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"

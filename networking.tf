@@ -1,5 +1,3 @@
-# Networking Module - Call the networking module
-
 module "networking" {
   source = "./modules/networking"
 

@@ -1,5 +1,3 @@
-# EC2 Module - Call the EC2 module
-
 module "ec2" {
   source = "./modules/ec2"
 
