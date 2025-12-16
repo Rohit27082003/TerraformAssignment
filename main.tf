@@ -5,7 +5,7 @@ terraform {
     bucket         = "terraform-state-assignment09"
     key            = "terraform.tfstate"
     region         = "ap-south-1"
-    dynamodb_table = "TerraformState"
+    use_lockfile = "TerraformState"
     encrypt        = true
   }
 
